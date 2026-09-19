@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/brand_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="14dp"
+            android:background="@drawable/bg_home_indicator" />
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/all_active_groups" android:textColor="@color/brand_dark" android:textSize="16sp" android:textStyle="bold" />
+            <ImageButton android:id="@+id/sheet_close_btn" android:layout_width="34dp" android:layout_height="34dp" android:background="@drawable/bg_icon_badge_square" android:backgroundTint="@android:color/white" android:contentDescription="@string/close" android:padding="8dp" android:src="@drawable/ic_close" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/row_group_eng" android:clickable="true" android:focusable="true" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:background="@drawable/bg_dashboard_card" android:gravity="center_vertical" android:orientation="horizontal" android:padding="12dp">
+            <TextView android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_icon_badge" android:gravity="center" android:text="🎓" android:textSize="16sp" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Engineering 2026" android:textColor="@color/brand_dark" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="28 members • 10m ago" android:textColor="@color/brand_slate" android:textSize="10sp" />
+            </LinearLayout>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="View →" android:textColor="@color/brand_primary" android:textSize="11sp" android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/row_group_roomies" android:clickable="true" android:focusable="true" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:background="@drawable/bg_dashboard_card" android:gravity="center_vertical" android:orientation="horizontal" android:padding="12dp">
+            <TextView android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_icon_badge" android:gravity="center" android:text="⌂" android:textColor="@color/brand_purple" android:textSize="18sp" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Roomies Main St" android:textColor="@color/brand_dark" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="4 members • 1 plan" android:textColor="@color/brand_slate" android:textSize="10sp" />
+            </LinearLayout>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="View →" android:textColor="@color/brand_primary" android:textSize="11sp" android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/row_group_intramurals" android:clickable="true" android:focusable="true" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:background="@drawable/bg_dashboard_card" android:gravity="center_vertical" android:orientation="horizontal" android:padding="12dp">
+            <TextView android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_icon_badge" android:gravity="center" android:text="⚽" android:textSize="16sp" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Campus Intramurals" android:textColor="@color/brand_dark" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="6 members • 1 plan" android:textColor="@color/brand_slate" android:textSize="10sp" />
+            </LinearLayout>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="View →" android:textColor="@color/brand_primary" android:textSize="11sp" android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/row_group_thesis" android:clickable="true" android:focusable="true" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:background="@drawable/bg_dashboard_card" android:gravity="center_vertical" android:orientation="horizontal" android:padding="12dp">
+            <TextView android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_icon_badge" android:gravity="center" android:text="📘" android:textSize="16sp" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Thesis Support Group" android:textColor="@color/brand_dark" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="5 members • no active plan" android:textColor="@color/brand_slate" android:textSize="10sp" />
+            </LinearLayout>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="View →" android:textColor="@color/brand_primary" android:textSize="11sp" android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/row_group_choir" android:clickable="true" android:focusable="true" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:background="@drawable/bg_dashboard_card" android:gravity="center_vertical" android:orientation="horizontal" android:padding="12dp">
+            <TextView android:layout_width="40dp" android:layout_height="40dp" android:background="@drawable/bg_icon_badge" android:gravity="center" android:text="🎵" android:textSize="16sp" />
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="10dp" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="University Choir" android:textColor="@color/brand_dark" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="12 members • 1 plan" android:textColor="@color/brand_slate" android:textSize="10sp" />
+            </LinearLayout>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="View →" android:textColor="@color/brand_primary" android:textSize="11sp" android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
