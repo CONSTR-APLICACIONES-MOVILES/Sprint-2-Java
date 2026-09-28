@@ -93,4 +93,11 @@
     <string name="activity_time_label">Time</string>
     <string name="activity_location_label">Location</string>
     <string name="create_activity_cta">Create Activity</string>
+    <string name="rank_slots_by">Rank slots by</string>
+    <string name="rank_overlap">Most free</string>
+    <string name="rank_preference">Preferred hours</string>
+    <string name="rank_soonest">Soonest</string>
+    <string name="calculating_slots">Calculating common free slots…</string>
+    <string name="no_common_slots">No common free slot of at least 1 hour today.</string>
+    <string name="recommended">Recommended</string>
 </resources>
