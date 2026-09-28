@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.example.parchapp.data.Repositories;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class AvailabilityStatusSheet extends BottomSheetDialogFragment {
@@ -63,6 +64,7 @@ public class AvailabilityStatusSheet extends BottomSheetDialogFragment {
         }
 
         view.findViewById(R.id.save_status_button).setOnClickListener(v -> {
+            Repositories.status().setAvailability(selectedStatusName, selectedDurationName);
             Toast.makeText(requireContext(), selectedStatusName + " · " + selectedDurationName, Toast.LENGTH_SHORT).show();
             dismiss();
         });
