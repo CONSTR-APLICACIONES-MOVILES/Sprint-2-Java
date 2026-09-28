@@ -5,22 +5,35 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class DashboardActivity extends AppCompatActivity {
+import com.example.parchapp.analytics.AnalyticsEvents;
+import com.example.parchapp.analytics.AnalyticsTracker;
+import com.example.parchapp.data.DemoData;
+import com.example.parchapp.data.GroupListener;
+import com.example.parchapp.data.Repositories;
+import com.example.parchapp.domain.StatusService;
+import com.example.parchapp.domain.model.Group;
+
+public class DashboardActivity extends AppCompatActivity implements GroupListener, StatusService.Listener {
+
+    private static final String SCREEN = "dashboard";
+    /** Exaple of the mock is a group that owns the soccer plan card. */
+    private static final String SOCCER_GROUP_ID = DemoData.INTRAMURALS_ID;
 
     private TextView displayFreeUntil;
     private TextView displayNextActivity;
     private TextView soccerVoteBadge;
-    private android.view.View soccerProgressBar;
+    private View soccerProgressBar;
     private Button goingButton;
     private Button maybeButton;
-    private boolean isGoing = false;
-    private boolean isMaybe = false;
+    private final AnalyticsTracker tracker = AnalyticsTracker.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,17 +50,25 @@ public class DashboardActivity extends AppCompatActivity {
         maybeButton = findViewById(R.id.maybe_button);
 
         findViewById(R.id.header_search_btn).setOnClickListener(v -> toast("Search coming soon"));
-        findViewById(R.id.header_notif_btn).setOnClickListener(v -> toast("No new notifications"));
+        findViewById(R.id.header_notif_btn).setOnClickListener(v -> {
+            tracker.trackFeature(AnalyticsEvents.FEATURE_ALERTS, SCREEN);
+            toast("No new notifications");
+        });
         findViewById(R.id.header_user_initials).setOnClickListener(v ->
                 new AvailabilityStatusSheet().show(getSupportFragmentManager(), "availability_status"));
 
         findViewById(R.id.copy_link_button).setOnClickListener(v -> copyInviteLink());
         findViewById(R.id.btn_edit_free_until).setOnClickListener(v -> openQuickStatusSheet());
         findViewById(R.id.btn_edit_next_activity).setOnClickListener(v -> openQuickStatusSheet());
-        findViewById(R.id.compare_button).setOnClickListener(v ->
-                new CompareAvailabilitySheet().show(getSupportFragmentManager(), "compare_availability"));
-        findViewById(R.id.calendar_button).setOnClickListener(v ->
-                new CalendarSheet().show(getSupportFragmentManager(), "calendar"));
+        findViewById(R.id.compare_button).setOnClickListener(v -> {
+            tracker.trackFeature(AnalyticsEvents.FEATURE_COMPARE_AVAILABILITY, SCREEN);
+            CompareAvailabilitySheet.newInstance(DemoData.ROOMIES_ID)
+                    .show(getSupportFragmentManager(), "compare_availability");
+        });
+        findViewById(R.id.calendar_button).setOnClickListener(v -> {
+            tracker.trackFeature(AnalyticsEvents.FEATURE_SCHEDULE, SCREEN);
+            new CalendarSheet().show(getSupportFragmentManager(), "calendar");
+        });
         findViewById(R.id.new_activity_button).setOnClickListener(v ->
                 new CreateActivitySheet().show(getSupportFragmentManager(), "create_activity"));
 
@@ -57,30 +78,83 @@ public class DashboardActivity extends AppCompatActivity {
         goingButton.setOnClickListener(v -> setRsvp(true));
         maybeButton.setOnClickListener(v -> setRsvp(false));
 
-        findViewById(R.id.group_card_eng).setOnClickListener(v -> openEngineeringGroupSheet());
-        findViewById(R.id.roomies_group_card).setOnClickListener(v ->
-                startActivity(new Intent(this, GroupDetailActivity.class)));
-        findViewById(R.id.view_all_groups_button).setOnClickListener(v -> openAllGroupsSheet());
+        findViewById(R.id.group_card_eng).setOnClickListener(v -> {
+            tracker.trackFeature(AnalyticsEvents.FEATURE_GROUPS, SCREEN);
+            openEngineeringGroupSheet();
+        });
+        findViewById(R.id.roomies_group_card).setOnClickListener(v -> openGroupDetail());
+        findViewById(R.id.view_all_groups_button).setOnClickListener(v -> {
+            tracker.trackFeature(AnalyticsEvents.FEATURE_GROUPS, SCREEN);
+            openAllGroupsSheet();
+        });
 
-        findViewById(R.id.nav_groups).setOnClickListener(v ->
-                startActivity(new Intent(this, GroupDetailActivity.class)));
-        findViewById(R.id.nav_schedule).setOnClickListener(v -> toast("Schedule coming soon"));
+        findViewById(R.id.nav_groups).setOnClickListener(v -> openGroupDetail());
+        findViewById(R.id.nav_schedule).setOnClickListener(v -> {
+            tracker.trackFeature(AnalyticsEvents.FEATURE_SCHEDULE, SCREEN);
+            toast("Schedule coming soon");
+        });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Repositories.groups().observeGroup(SOCCER_GROUP_ID, this);
+        StatusService status = Repositories.status();
+        status.addListener(this);
+        onStatusChanged(status);
+    }
+
+    @Override
+    protected void onStop() {
+        Repositories.groups().removeGroupListener(SOCCER_GROUP_ID, this);
+        Repositories.status().removeListener(this);
+        super.onStop();
+    }
+
+    @Override
+    public void onGroupChanged(Group group) {
+        String userId = UserSession.getCurrentUser().getId();
+        boolean going = group.getGoingIds().contains(userId);
+        boolean maybe = group.getMaybeIds().contains(userId);
+        String count = group.getGoingCount() + "/" + group.getRsvpTotal();
+
+        if (going) {
+            soccerVoteBadge.setText("✓  You're going • " + count);
+        } else if (maybe) {
+            soccerVoteBadge.setText("◷  Maybe • " + count);
+        } else {
+            soccerVoteBadge.setText("◷  Voting pending • " + count);
+        }
+        renderRsvpButtons(going, maybe);
+
+        View track = (View) soccerProgressBar.getParent();
+        track.post(() -> {
+            ViewGroup.LayoutParams params = soccerProgressBar.getLayoutParams();
+            params.width = track.getWidth() * group.getGoingCount() / Math.max(1, group.getRsvpTotal());
+            soccerProgressBar.setLayoutParams(params);
+        });
+    }
+
+    @Override
+    public void onStatusChanged(StatusService status) {
+        displayFreeUntil.setText(status.getFreeUntil());
+        displayNextActivity.setText(status.getNextActivity());
     }
 
     private void openQuickStatusSheet() {
         QuickStatusSheet.newInstance((freeUntil, nextActivity) -> {
-            if (!freeUntil.isEmpty()) {
-                displayFreeUntil.setText(freeUntil);
-            }
-            if (!nextActivity.isEmpty()) {
-                displayNextActivity.setText(nextActivity);
-            }
+            Repositories.status().updateQuickStatus(freeUntil, nextActivity);
             toast("Status updated");
         }).show(getSupportFragmentManager(), "quick_status");
     }
 
     private void openPlanDetails() {
         new PlanDetailsSheet().show(getSupportFragmentManager(), "plan_details");
+    }
+
+    private void openGroupDetail() {
+        tracker.trackFeature(AnalyticsEvents.FEATURE_GROUPS, SCREEN);
+        startActivity(new Intent(this, GroupDetailActivity.class));
     }
 
     private void openEngineeringGroupSheet() {
@@ -123,9 +197,13 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
+    /** The badge and buttons update when the repository notifies the change, even offline. */
     private void setRsvp(boolean going) {
-        isGoing = going;
-        isMaybe = !going;
+        Repositories.groups().setRsvp(SOCCER_GROUP_ID, UserSession.getCurrentUser().getId(), going);
+        toast(going ? "RSVP confirmed: Going" : "RSVP changed to Maybe");
+    }
+
+    private void renderRsvpButtons(boolean isGoing, boolean isMaybe) {
         goingButton.setBackgroundResource(isGoing ? R.drawable.bg_progress_fill : R.drawable.bg_green_chip);
         goingButton.setBackgroundTintList(isGoing
                 ? getColorStateList(R.color.brand_success)
@@ -137,12 +215,10 @@ public class DashboardActivity extends AppCompatActivity {
                 ? getColorStateList(R.color.brand_primary)
                 : null);
         maybeButton.setTextColor(getColor(isMaybe ? android.R.color.white : R.color.brand_slate));
-
-        soccerVoteBadge.setText(going ? "✓  You're going • 4/6" : "◷  Maybe • 4/6");
-        toast(going ? "RSVP confirmed: Going" : "RSVP changed to Maybe");
     }
 
     private void copyInviteLink() {
+        tracker.trackFeature(AnalyticsEvents.FEATURE_INVITATIONS, SCREEN);
         String link = ((TextView) findViewById(R.id.invite_link_text)).getText().toString();
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         clipboard.setPrimaryClip(ClipData.newPlainText("Invite link", link));
@@ -158,8 +234,5 @@ public class DashboardActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.greeting_text)).setText("Hello, " + user.getFirstName() + "! 👋");
         ((TextView) findViewById(R.id.active_plans_text)).setText("You have " + user.getActivePlans() + " active plans today");
         ((TextView) findViewById(R.id.invite_link_text)).setText(user.getInviteLink());
-
-        // TODO: ajustar segun usuario: estado, siguiente actividad y planes deben venir del backend.
-        // TODO: ajustar segun usuario: grupos activos deben cargarse desde la cuenta autenticada.
     }
 }

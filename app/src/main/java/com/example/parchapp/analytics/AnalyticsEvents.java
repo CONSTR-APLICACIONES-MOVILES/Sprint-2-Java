@@ -1,0 +1,38 @@
+package com.example.parchapp.analytics;
+
+/* Event and parameter names shared by the app and the BigQuery queries in {@code analytics/sql}.
+Changing a name here i this case breaks the matching query. <p>Privacy: parameters never include calendar titles, places or attendees. Only group sizes,
+    slot positions, durations, feature names and timestamps are logged.
+ */
+public final class AnalyticsEvents {
+    private AnalyticsEvents() {
+    }
+
+    /* BQ1: one calculation of common slots by the availability engine. */
+    public static final String AVAILABILITY_CALCULATED = "availability_calc";
+    /* BQ3: the organiser created an activity in one of the suggested slots. */
+    public static final String SLOT_ACCEPTED = "slot_accepted";
+    /* BQ8: a core coordination feature was opened. */
+    public static final String FEATURE_USED = "feature_used";
+    public static final String ACTIVITY_CREATED = "activity_created";
+
+    public static final String PARAM_GROUP_SIZE = "group_size";
+    public static final String PARAM_DURATION_MS = "duration_ms";
+    public static final String PARAM_SLOT_COUNT = "slot_count";
+    public static final String PARAM_RANKER = "ranker";
+    public static final String PARAM_SOURCE = "source";
+    public static final String PARAM_SLOT_POSITION = "slot_position";
+    public static final String PARAM_RECOMMENDED_POSITION = "recommended_position";
+    public static final String PARAM_MODIFIED = "modified";
+    public static final String PARAM_FEATURE = "feature";
+    public static final String PARAM_SCREEN = "screen";
+    public static final String PARAM_CATEGORY = "category";
+    public static final String PARAM_CLIENT_TS = "client_ts";
+
+    // BQ8 feature names.
+    public static final String FEATURE_GROUPS = "groups";
+    public static final String FEATURE_COMPARE_AVAILABILITY = "compare_availability";
+    public static final String FEATURE_SCHEDULE = "schedule";
+    public static final String FEATURE_INVITATIONS = "invitations";
+    public static final String FEATURE_ALERTS = "alerts";
+}

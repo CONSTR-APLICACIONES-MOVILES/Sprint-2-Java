@@ -2,6 +2,11 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+// google-services.json comes from the team Firebase console and is not in the repo yet cause we have to unify with the other group cause is Java and the other lang. Without google-services.json the app still builds and falls back to in-memory repositories and a Logcat analytics sink.
+if (file('google-services.json').exists()) {
+    apply plugin: 'com.google.gms.google-services'
+}
+
 android {
     namespace 'com.example.parchapp'
     compileSdk {
@@ -35,6 +40,10 @@ dependencies {
     implementation libs.appcompat
     implementation libs.constraintlayout
     implementation libs.material
+    implementation platform(libs.firebase.bom)
+    implementation libs.firebase.analytics
+    implementation libs.firebase.auth
+    implementation libs.firebase.firestore
     testImplementation libs.junit
     androidTestImplementation libs.espresso.core
     androidTestImplementation libs.ext.junit
