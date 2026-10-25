@@ -36,7 +36,7 @@
             <TextView android:id="@+id/best_slot_label" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/best_mutual_match" android:textAllCaps="true" android:textColor="@color/brand_success_dark" android:textSize="11sp" android:textStyle="bold" />
             <TextView android:id="@+id/best_slot_badge" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@android:color/white" android:paddingStart="8dp" android:paddingTop="3dp" android:paddingEnd="8dp" android:paddingBottom="3dp" android:text="4/4 Free" android:textColor="@color/brand_success_dark" android:textSize="10sp" android:textStyle="bold" />
         </LinearLayout>
-        <TextView android:id="@+id/best_slot_time" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="6:00 PM – 7:30 PM" android:textColor="@color/brand_success_dark" android:textSize="16sp" android:textStyle="bold" />
+        <TextView android:id="@+id/best_slot_time" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Loading..." android:textColor="@color/brand_success_dark" android:textSize="16sp" android:textStyle="bold" />
         <TextView android:id="@+id/best_slot_note" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Everyone is out of classes and free before dinner." android:textColor="@color/brand_success_dark" android:textSize="11sp" />
     </LinearLayout>
 

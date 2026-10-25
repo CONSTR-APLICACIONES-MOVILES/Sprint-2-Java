@@ -12,9 +12,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.parchapp.data.DemoData;
 import com.example.parchapp.data.InsightsRepository;
 import com.example.parchapp.data.Repositories;
+import com.example.parchapp.analytics.AnalyticsEvents;
+import com.example.parchapp.analytics.AnalyticsTracker;
 import com.example.parchapp.domain.availability.AvailabilityEngine;
 import com.example.parchapp.domain.availability.OverlapRanking;
 import com.example.parchapp.domain.availability.PreferenceRanking;
@@ -27,8 +28,11 @@ import com.example.parchapp.util.Callback;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 
 public class CompareAvailabilitySheet extends BottomSheetDialogFragment {
 
@@ -40,6 +44,7 @@ public class CompareAvailabilitySheet extends BottomSheetDialogFragment {
     private String groupId;
     private Group group;
     private List<TimeSlot> rankedSlots = new ArrayList<>();
+    private List<String> recommendationIds = new ArrayList<>();
     private int selectedPosition;
     private int recommendedPosition = InsightsRepository.DEFAULT_RECOMMENDED_POSITION;
 
@@ -67,7 +72,7 @@ public class CompareAvailabilitySheet extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Bundle args = getArguments();
-        groupId = args != null ? args.getString(ARG_GROUP_ID, DemoData.ROOMIES_ID) : DemoData.ROOMIES_ID;
+        groupId = args == null ? null : args.getString(ARG_GROUP_ID);
 
         statusText = view.findViewById(R.id.slots_status_text);
         bestSlotCard = view.findViewById(R.id.best_slot_card);
@@ -97,6 +102,29 @@ public class CompareAvailabilitySheet extends BottomSheetDialogFragment {
             }
         });
 
+        if (groupId == null) {
+            Repositories.groups().getGroups(UserSession.getCurrentUser().getId(), new Callback<List<Group>>() {
+                @Override
+                public void onSuccess(List<Group> groups) {
+                    if (groups.isEmpty()) {
+                        showGroupError();
+                        return;
+                    }
+                    groupId = groups.get(0).getId();
+                    loadGroup(view);
+                }
+
+                @Override
+                public void onError(Exception error) {
+                    showGroupError();
+                }
+            });
+        } else {
+            loadGroup(view);
+        }
+    }
+
+    private void loadGroup(View view) {
         Repositories.groups().getGroup(groupId, new Callback<Group>() {
             @Override
             public void onSuccess(Group result) {
@@ -112,11 +140,17 @@ public class CompareAvailabilitySheet extends BottomSheetDialogFragment {
             @Override
             public void onError(Exception error) {
                 if (getView() != null) {
-                    statusText.setText(R.string.no_common_slots);
-                    Toast.makeText(requireContext(), "Could not load the group", Toast.LENGTH_SHORT).show();
+                    showGroupError();
                 }
             }
         });
+    }
+
+    private void showGroupError() {
+        if (getView() != null) {
+            statusText.setText(R.string.no_common_slots);
+            Toast.makeText(requireContext(), "Could not load the group", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupRankChip(View root, int chipId, SlotRanker ranker) {
@@ -146,6 +180,11 @@ public class CompareAvailabilitySheet extends BottomSheetDialogFragment {
                     return;
                 }
                 rankedSlots = slots;
+                recommendationIds = new ArrayList<>();
+                for (int i = 0; i < slots.size(); i++) {
+                    recommendationIds.add(UUID.randomUUID().toString());
+                }
+                trackPresentedSlots();
                 selectedPosition = 0;
                 renderSlots();
             }
@@ -231,9 +270,22 @@ public class CompareAvailabilitySheet extends BottomSheetDialogFragment {
             return;
         }
         TimeSlot slot = rankedSlots.get(selectedPosition);
+        String recommendationId = selectedPosition < recommendationIds.size()
+                ? recommendationIds.get(selectedPosition) : null;
         CreateActivitySheet.newInstance(group.getId(), group.getSize(), slot.formatRange(),
-                selectedPosition, recommendedPosition).show(getParentFragmentManager(), "create_activity");
+                selectedPosition, recommendedPosition, recommendationId)
+                .show(getParentFragmentManager(), "create_activity");
         dismiss();
+    }
+
+    private void trackPresentedSlots() {
+        int visible = Math.min(MAX_ALTERNATIVES + 1, rankedSlots.size());
+        for (int position = 0; position < visible; position++) {
+            Map<String, Object> params = new HashMap<>();
+            params.put(AnalyticsEvents.PARAM_RECOMMENDATION_ID, recommendationIds.get(position));
+            params.put(AnalyticsEvents.PARAM_SLOT_POSITION, position);
+            AnalyticsTracker.getInstance().track(AnalyticsEvents.SLOT_PRESENTED, params);
+        }
     }
 
     private String freeMemberNames(TimeSlot slot) {

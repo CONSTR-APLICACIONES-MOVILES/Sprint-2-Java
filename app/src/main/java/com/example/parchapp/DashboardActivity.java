@@ -20,13 +20,15 @@ import com.example.parchapp.data.GroupListener;
 import com.example.parchapp.data.Repositories;
 import com.example.parchapp.domain.StatusService;
 import com.example.parchapp.domain.model.Group;
+import com.example.parchapp.domain.model.PlannedActivity;
+import com.example.parchapp.util.Callback;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DashboardActivity extends AppCompatActivity implements GroupListener, StatusService.Listener {
 
     private static final String SCREEN = "dashboard";
-    /** Exaple of the mock is a group that owns the soccer plan card. */
-    private static final String SOCCER_GROUP_ID = DemoData.INTRAMURALS_ID;
-
     private TextView displayFreeUntil;
     private TextView displayNextActivity;
     private TextView soccerVoteBadge;
@@ -34,6 +36,9 @@ public class DashboardActivity extends AppCompatActivity implements GroupListene
     private Button goingButton;
     private Button maybeButton;
     private final AnalyticsTracker tracker = AnalyticsTracker.getInstance();
+    private final List<Group> loadedGroups = new ArrayList<>();
+    private String rsvpGroupId;
+    private PlannedActivity latestActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +67,7 @@ public class DashboardActivity extends AppCompatActivity implements GroupListene
         findViewById(R.id.btn_edit_next_activity).setOnClickListener(v -> openQuickStatusSheet());
         findViewById(R.id.compare_button).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_COMPARE_AVAILABILITY, SCREEN);
-            CompareAvailabilitySheet.newInstance(DemoData.ROOMIES_ID)
-                    .show(getSupportFragmentManager(), "compare_availability");
+            openCompareAvailability();
         });
         findViewById(R.id.calendar_button).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_SCHEDULE, SCREEN);
@@ -80,9 +84,9 @@ public class DashboardActivity extends AppCompatActivity implements GroupListene
 
         findViewById(R.id.group_card_eng).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_GROUPS, SCREEN);
-            openEngineeringGroupSheet();
+            openGroupByIndex(0);
         });
-        findViewById(R.id.roomies_group_card).setOnClickListener(v -> openGroupDetail());
+        findViewById(R.id.roomies_group_card).setOnClickListener(v -> openGroupByIndex(1));
         findViewById(R.id.view_all_groups_button).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_GROUPS, SCREEN);
             openAllGroupsSheet();
@@ -91,22 +95,27 @@ public class DashboardActivity extends AppCompatActivity implements GroupListene
         findViewById(R.id.nav_groups).setOnClickListener(v -> openGroupDetail());
         findViewById(R.id.nav_schedule).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_SCHEDULE, SCREEN);
-            toast("Schedule coming soon");
+            new CalendarSheet().show(getSupportFragmentManager(), "calendar_navigation");
         });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Repositories.groups().observeGroup(SOCCER_GROUP_ID, this);
+        loadGroups();
+        loadActivities();
         StatusService status = Repositories.status();
         status.addListener(this);
+        status.startMotionDetection();
         onStatusChanged(status);
     }
 
     @Override
     protected void onStop() {
-        Repositories.groups().removeGroupListener(SOCCER_GROUP_ID, this);
+        if (rsvpGroupId != null) {
+            Repositories.groups().removeGroupListener(rsvpGroupId, this);
+        }
+        Repositories.status().stopMotionDetection();
         Repositories.status().removeListener(this);
         super.onStop();
     }
@@ -141,6 +150,12 @@ public class DashboardActivity extends AppCompatActivity implements GroupListene
         displayNextActivity.setText(status.getNextActivity());
     }
 
+    @Override
+    public void onCommuteSuggested(StatusService status) {
+        status.setAvailability("Commute / In Transit", "For 1 hour");
+        toast("Movement detected: status set to Commute / In Transit");
+    }
+
     private void openQuickStatusSheet() {
         QuickStatusSheet.newInstance((freeUntil, nextActivity) -> {
             Repositories.status().updateQuickStatus(freeUntil, nextActivity);
@@ -149,57 +164,147 @@ public class DashboardActivity extends AppCompatActivity implements GroupListene
     }
 
     private void openPlanDetails() {
-        new PlanDetailsSheet().show(getSupportFragmentManager(), "plan_details");
+        if (latestActivity == null) {
+            toast("No activity data is available");
+            return;
+        }
+        PlanDetailsSheet.newInstance(latestActivity.getTitle(), latestActivity.getStatus(),
+                latestActivity.getDate(), latestActivity.getTime(), latestActivity.getLocation())
+                .show(getSupportFragmentManager(), "plan_details");
     }
 
     private void openGroupDetail() {
         tracker.trackFeature(AnalyticsEvents.FEATURE_GROUPS, SCREEN);
-        startActivity(new Intent(this, GroupDetailActivity.class));
-    }
-
-    private void openEngineeringGroupSheet() {
-        GroupDetailsSheet.newInstance(
-                "🎓",
-                "Engineering 2026",
-                "28 members • Real-time synced",
-                "Linear Algebra midterm study planned for Central Library Room 302 at 4:00 PM."
-        ).show(getSupportFragmentManager(), "group_details_eng");
+        openGroupByIndex(0);
     }
 
     private void openAllGroupsSheet() {
         AllGroupsSheet.newInstance(groupKey -> {
-            if ("roomies".equals(groupKey)) {
-                startActivity(new Intent(this, GroupDetailActivity.class));
-            } else if ("eng".equals(groupKey)) {
-                openEngineeringGroupSheet();
-            } else {
-                GroupDetailsSheet.newInstance("📌", groupTitleFor(groupKey), groupSubtitleFor(groupKey),
-                        "No recent shared status yet.").show(getSupportFragmentManager(), "group_details_generic");
+            for (Group group : loadedGroups) {
+                if (group.getId().equals(groupKey)) {
+                    startActivity(new Intent(this, GroupDetailActivity.class)
+                            .putExtra(GroupDetailActivity.EXTRA_GROUP_ID, group.getId()));
+                    return;
+                }
             }
-        }).show(getSupportFragmentManager(), "all_groups");
+            toast("Group is no longer available");
+        }, loadedGroups).show(getSupportFragmentManager(), "all_groups");
     }
 
-    private String groupTitleFor(String groupKey) {
-        switch (groupKey) {
-            case "intramurals": return "Campus Intramurals";
-            case "thesis": return "Thesis Support Group";
-            case "choir": return "University Choir";
-            default: return "Group";
-        }
+    private void loadGroups() {
+        Repositories.groups().getGroups(UserSession.getCurrentUser().getId(), new Callback<List<Group>>() {
+            @Override
+            public void onSuccess(List<Group> groups) {
+                loadedGroups.clear();
+                loadedGroups.addAll(groups);
+                bindGroups();
+                if (!loadedGroups.isEmpty()) {
+                    rsvpGroupId = loadedGroups.get(0).getId();
+                    Repositories.groups().observeGroup(rsvpGroupId, DashboardActivity.this);
+                }
+            }
+
+            @Override
+            public void onError(Exception error) {
+                hideGroupCards();
+                toast("Could not load your groups");
+            }
+        });
     }
 
-    private String groupSubtitleFor(String groupKey) {
-        switch (groupKey) {
-            case "intramurals": return "6 members • 1 plan";
-            case "thesis": return "5 members • no active plan";
-            case "choir": return "12 members • 1 plan";
-            default: return "";
+    private void loadActivities() {
+        Repositories.activities().getActivities(UserSession.getCurrentUser().getId(),
+                new Callback<List<PlannedActivity>>() {
+                    @Override
+                    public void onSuccess(List<PlannedActivity> activities) {
+                        if (activities.isEmpty()) {
+                            findViewById(R.id.plan_card_study).setVisibility(View.GONE);
+                            return;
+                        }
+                        PlannedActivity activity = activities.get(0);
+                        latestActivity = activity;
+                        findViewById(R.id.plan_card_study).setVisibility(View.VISIBLE);
+                        ((TextView) findViewById(R.id.plan_status_text)).setText(activity.getStatus());
+                        ((TextView) findViewById(R.id.plan_title_text)).setText(activity.getTitle());
+                        ((TextView) findViewById(R.id.plan_time_text)).setText(
+                                joinNonEmpty(activity.getDate(), activity.getTime()));
+                        ((TextView) findViewById(R.id.plan_location_text)).setText(activity.getLocation());
+                    }
+
+                    @Override
+                    public void onError(Exception error) {
+                        findViewById(R.id.plan_card_study).setVisibility(View.GONE);
+                    }
+                });
+    }
+
+    private void bindGroups() {
+        bindGroupCard(0, R.id.group_card_eng_title, R.id.group_card_eng_subtitle,
+                R.id.group_card_eng_icon, R.id.group_card_eng);
+        bindGroupCard(1, R.id.group_card_roomies_title, R.id.group_card_roomies_subtitle,
+                R.id.group_card_roomies_icon, R.id.roomies_group_card);
+        if (loadedGroups.isEmpty()) {
+            findViewById(R.id.plan_card_rsvp).setVisibility(View.GONE);
+            return;
         }
+        Group group = loadedGroups.get(0);
+        ((TextView) findViewById(R.id.rsvp_plan_title)).setText(group.getPlanTitle());
+        ((TextView) findViewById(R.id.rsvp_plan_time)).setText(
+                group.getPlanTitle().isEmpty() ? "No active plan" : "Schedule not specified");
+        ((TextView) findViewById(R.id.rsvp_plan_location)).setText("Location not specified");
+        findViewById(R.id.plan_card_rsvp).setVisibility(
+                group.getPlanTitle().isEmpty() ? View.GONE : View.VISIBLE);
+    }
+
+    private void bindGroupCard(int index, int titleId, int subtitleId, int iconId, int cardId) {
+        View card = findViewById(cardId);
+        if (index >= loadedGroups.size()) {
+            card.setVisibility(View.GONE);
+            return;
+        }
+        Group group = loadedGroups.get(index);
+        card.setVisibility(View.VISIBLE);
+        ((TextView) findViewById(titleId)).setText(group.getName());
+        ((TextView) findViewById(subtitleId)).setText(group.getSize() + " members");
+        ((TextView) findViewById(iconId)).setText(group.getIcon());
+    }
+
+    private void hideGroupCards() {
+        findViewById(R.id.group_card_eng).setVisibility(View.GONE);
+        findViewById(R.id.roomies_group_card).setVisibility(View.GONE);
+        findViewById(R.id.plan_card_rsvp).setVisibility(View.GONE);
+    }
+
+    private void openGroupByIndex(int index) {
+        if (index >= loadedGroups.size()) {
+            toast("No group is available");
+            return;
+        }
+        startActivity(new Intent(this, GroupDetailActivity.class)
+                .putExtra(GroupDetailActivity.EXTRA_GROUP_ID, loadedGroups.get(index).getId()));
+    }
+
+    private void openCompareAvailability() {
+        if (loadedGroups.isEmpty()) {
+            toast("No group is available");
+            return;
+        }
+        CompareAvailabilitySheet.newInstance(loadedGroups.get(0).getId())
+                .show(getSupportFragmentManager(), "compare_availability");
+    }
+
+    private String joinNonEmpty(String first, String second) {
+        String value = (first + " " + second).trim();
+        return value.isEmpty() ? "Schedule not specified" : value;
     }
 
     /** The badge and buttons update when the repository notifies the change, even offline. */
     private void setRsvp(boolean going) {
-        Repositories.groups().setRsvp(SOCCER_GROUP_ID, UserSession.getCurrentUser().getId(), going);
+        if (rsvpGroupId == null) {
+            toast("No group is available for RSVP");
+            return;
+        }
+        Repositories.groups().setRsvp(rsvpGroupId, UserSession.getCurrentUser().getId(), going);
         toast(going ? "RSVP confirmed: Going" : "RSVP changed to Maybe");
     }
 

@@ -13,9 +13,17 @@ public class PlannedActivity {
     private final String location;
     private final String status;
     private final long createdAt;
+    private final int groupSizeAtCreation;
+    private final boolean comparisonUsed;
 
     public PlannedActivity(String id, String groupId, String title, String category, String date,
                            String time, String location, String status, long createdAt) {
+        this(id, groupId, title, category, date, time, location, status, createdAt, 0, false);
+    }
+
+    public PlannedActivity(String id, String groupId, String title, String category, String date,
+                           String time, String location, String status, long createdAt,
+                           int groupSizeAtCreation, boolean comparisonUsed) {
         this.id = id;
         this.groupId = groupId;
         this.title = title;
@@ -25,10 +33,18 @@ public class PlannedActivity {
         this.location = location;
         this.status = status;
         this.createdAt = createdAt;
+        this.groupSizeAtCreation = groupSizeAtCreation;
+        this.comparisonUsed = comparisonUsed;
     }
 
     public PlannedActivity withId(String newId) {
-        return new PlannedActivity(newId, groupId, title, category, date, time, location, status, createdAt);
+        return new PlannedActivity(newId, groupId, title, category, date, time, location, status,
+                createdAt, groupSizeAtCreation, comparisonUsed);
+    }
+
+    public PlannedActivity withPlanningContext(int groupSize, boolean usedComparison) {
+        return new PlannedActivity(id, groupId, title, category, date, time, location, status,
+                createdAt, groupSize, usedComparison);
     }
 
     public String getId() {
@@ -65,5 +81,13 @@ public class PlannedActivity {
 
     public long getCreatedAt() {
         return createdAt;
+    }
+
+    public int getGroupSizeAtCreation() {
+        return groupSizeAtCreation;
+    }
+
+    public boolean isComparisonUsed() {
+        return comparisonUsed;
     }
 }

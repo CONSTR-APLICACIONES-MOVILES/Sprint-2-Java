@@ -48,15 +48,23 @@ class FirestoreGroupRepository extends BaseGroupRepository {
                             callback.onSuccess(fromSnapshot(snapshot));
                             return;
                         }
-                        Group seeded = snapshot.getMetadata().isFromCache() ? null : seed(groupId);
-                        if (seeded != null) {
-                            callback.onSuccess(seeded);
-                        } else {
-                            callback.onError(new NoSuchElementException("Group " + groupId + " not found"));
-                        }
+                        callback.onError(new NoSuchElementException("Group " + groupId + " not found"));
                     })
                     .addOnFailureListener(callback::onError);
         });
+    }
+
+    @Override
+    public void getGroups(String userId, Callback<List<Group>> callback) {
+        collection.whereArrayContains("memberIds", userId).get()
+                .addOnSuccessListener(snapshot -> {
+                    List<Group> groups = new ArrayList<>();
+                    for (DocumentSnapshot document : snapshot.getDocuments()) {
+                        groups.add(fromSnapshot(document));
+                    }
+                    MainThread.post(() -> callback.onSuccess(groups));
+                })
+                .addOnFailureListener(error -> MainThread.post(() -> callback.onError(error)));
     }
 
     @Override
@@ -82,10 +90,6 @@ class FirestoreGroupRepository extends BaseGroupRepository {
             }
             if (snapshot.exists()) {
                 notifyListeners(fromSnapshot(snapshot));
-            } else if (!snapshot.getMetadata().isFromCache()) {
-                // Only seed when the server confirms the group is missing, never from an offline
-                // cache miss. Writing the seed triggers this listener again with the new document.
-                seed(groupId);
             }
         });
         registrations.put(groupId, registration);
@@ -121,18 +125,12 @@ class FirestoreGroupRepository extends BaseGroupRepository {
                 .addOnFailureListener(e -> Log.w(TAG, "Removing invite failed", e));
     }
 
-    private Group seed(String groupId) {
-        Group demo = DemoData.groups().get(groupId);
-        if (demo != null) {
-            collection.document(groupId).set(toMap(demo))
-                    .addOnFailureListener(e -> Log.w(TAG, "Seeding group " + groupId + " failed", e));
-        }
-        return demo;
-    }
-
     static Map<String, Object> toMap(Group group) {
         List<Map<String, Object>> members = new ArrayList<>();
+        // getGroups() looks for the user in this list, so every group must save it
+        List<String> memberIds = new ArrayList<>();
         for (Member member : group.getMembers()) {
+            memberIds.add(member.getId());
             List<Map<String, Object>> busy = new ArrayList<>();
             for (TimeBlock block : member.getBusyBlocks()) {
                 Map<String, Object> blockMap = new HashMap<>();
@@ -154,6 +152,7 @@ class FirestoreGroupRepository extends BaseGroupRepository {
         map.put("icon", group.getIcon());
         map.put("planTitle", group.getPlanTitle());
         map.put("members", members);
+        map.put("memberIds", memberIds);
         map.put("goingIds", group.getGoingIds());
         map.put("maybeIds", group.getMaybeIds());
         map.put("pendingInvites", group.getPendingInvites());

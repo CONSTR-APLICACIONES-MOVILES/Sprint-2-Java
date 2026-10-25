@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.parchapp.analytics.ActivityCreationTelemetry;
 import com.example.parchapp.analytics.AnalyticsEvents;
 import com.example.parchapp.analytics.AnalyticsTracker;
 import com.example.parchapp.data.Repositories;
@@ -39,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 public class CreateGroupActivity extends AppCompatActivity {
     private static final String SCREEN = "create_group";
@@ -100,19 +102,20 @@ public class CreateGroupActivity extends AppCompatActivity {
                 startActivity(new Intent(this, DashboardActivity.class)));
         findViewById(R.id.nav_schedule_create).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_SCHEDULE, SCREEN);
-            toast("Schedule coming soon");
+            new CalendarSheet().show(getSupportFragmentManager(), "calendar_navigation");
         });
 
         renderInvites();
     }
 
     // opens the android calendar. past days can not be chosen
+    // the date is saved as yyyy-MM-dd because ExternalActions reads it like that for the calendar
     private void pickDate() {
         Calendar today = Calendar.getInstance();
         DatePickerDialog dialog = new DatePickerDialog(this, (picker, year, month, day) -> {
             Calendar chosen = Calendar.getInstance();
             chosen.set(year, month, day);
-            dateInput.setText(new SimpleDateFormat("EEE, MMM d, yyyy", Locale.US).format(chosen.getTime()));
+            dateInput.setText(new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(chosen.getTime()));
         }, today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH));
         dialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
         dialog.show();
@@ -209,30 +212,42 @@ public class CreateGroupActivity extends AppCompatActivity {
     private void createFirstPlan(Group group, String date, String time) {
         PlannedActivity activity = new PlannedActivity(null, group.getId(), group.getName(), "other", date, time, "",
                 PlannedActivity.STATUS_PROPOSED, System.currentTimeMillis());
+        String creationSessionId = UUID.randomUUID().toString();
+        long creationStartedAt = System.currentTimeMillis();
+        ActivityCreationTelemetry.attempt(creationSessionId, "propose_plan", group.getSize());
         Repositories.activities().createActivity(activity, new Callback<PlannedActivity>() {
             @Override
             public void onSuccess(PlannedActivity saved) {
+                ActivityCreationTelemetry.result(creationSessionId, "propose_plan",
+                        System.currentTimeMillis() - creationStartedAt, true, saved.getId(), null);
                 Map<String, Object> params = new HashMap<>();
                 params.put(AnalyticsEvents.PARAM_CATEGORY, "other");
                 params.put(AnalyticsEvents.PARAM_SOURCE, "propose_plan");
+                params.put(AnalyticsEvents.PARAM_CREATION_SESSION_ID, creationSessionId);
+                params.put(AnalyticsEvents.PARAM_ACTIVITY_ID, saved.getId());
                 tracker.track(AnalyticsEvents.ACTIVITY_CREATED, params);
-                openNewGroup(group);
+                toast("Group created");
+                startActivity(new Intent(CreateGroupActivity.this, ActivityCreatedActivity.class)
+                        .putExtra(ActivityCreatedActivity.EXTRA_TITLE, saved.getTitle())
+                        .putExtra(ActivityCreatedActivity.EXTRA_DATE, saved.getDate())
+                        .putExtra(ActivityCreatedActivity.EXTRA_TIME, saved.getTime())
+                        .putExtra(ActivityCreatedActivity.EXTRA_LOCATION, saved.getLocation()));
+                // we close the form so the same group is not created two times
+                finish();
             }
 
             @Override
             public void onError(Exception error) {
-                // the group is already saved, so we still open it
+                ActivityCreationTelemetry.result(creationSessionId, "propose_plan",
+                        System.currentTimeMillis() - creationStartedAt, false, null,
+                        error.getClass().getSimpleName());
+                // the group is already saved, so we open it even if the plan failed
                 toast("The group was created, but the plan could not be saved");
-                openNewGroup(group);
+                startActivity(new Intent(CreateGroupActivity.this, GroupDetailActivity.class)
+                        .putExtra(GroupDetailActivity.EXTRA_GROUP_ID, group.getId()));
+                finish();
             }
         });
-    }
-
-    private void openNewGroup(Group group) {
-        toast("Group created");
-        startActivity(new Intent(this, GroupDetailActivity.class)
-                .putExtra(GroupDetailActivity.EXTRA_GROUP_ID, group.getId()));
-        finish();
     }
 
     // the link uses the group name, for example "Bowling Night" -> parchapp.me/g/bowling-night

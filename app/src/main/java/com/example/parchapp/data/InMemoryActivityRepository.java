@@ -7,6 +7,7 @@ import com.example.parchapp.util.MainThread;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.Collections;
 
 class InMemoryActivityRepository implements ActivityRepository {
     private final List<PlannedActivity> activities = new ArrayList<>();
@@ -16,5 +17,10 @@ class InMemoryActivityRepository implements ActivityRepository {
         PlannedActivity saved = activity.withId(UUID.randomUUID().toString());
         activities.add(saved);
         MainThread.post(() -> callback.onSuccess(saved));
+    }
+
+    @Override
+    public void getActivities(String userId, Callback<List<PlannedActivity>> callback) {
+        MainThread.post(() -> callback.onSuccess(Collections.unmodifiableList(new ArrayList<>(activities))));
     }
 }
