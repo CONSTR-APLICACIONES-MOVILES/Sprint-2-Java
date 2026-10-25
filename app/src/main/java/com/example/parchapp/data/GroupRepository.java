@@ -10,6 +10,9 @@ import com.example.parchapp.util.Callback;
 public interface GroupRepository {
     void getGroup(String groupId, Callback<Group> callback);
 
+    // f6: saves a new group. the group comes without id and the callback gets it with its new id
+    void createGroup(Group group, Callback<Group> callback);
+
     /* Subscribes to live updates. The listener also receives the current value. */
     void observeGroup(String groupId, GroupListener listener);
 

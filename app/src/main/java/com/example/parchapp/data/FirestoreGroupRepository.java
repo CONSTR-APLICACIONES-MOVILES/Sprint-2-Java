@@ -6,6 +6,7 @@ import com.example.parchapp.domain.model.Group;
 import com.example.parchapp.domain.model.Member;
 import com.example.parchapp.domain.model.TimeBlock;
 import com.example.parchapp.util.Callback;
+import com.example.parchapp.util.MainThread;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -56,6 +57,17 @@ class FirestoreGroupRepository extends BaseGroupRepository {
                     })
                     .addOnFailureListener(callback::onError);
         });
+    }
+
+    @Override
+    public void createGroup(Group group, Callback<Group> callback) {
+        // firestore gives a random id to the new document
+        DocumentReference ref = collection.document();
+        ref.set(toMap(group)).addOnFailureListener(e -> Log.w(TAG, "Creating group failed", e));
+        // the write is saved on the phone first, so we answer right away (it also works offline)
+        Group saved = new Group(ref.getId(), group.getName(), group.getIcon(), group.getPlanTitle(),
+                group.getMembers(), group.getGoingIds(), group.getMaybeIds(), group.getPendingInvites());
+        MainThread.post(() -> callback.onSuccess(saved));
     }
 
     @Override

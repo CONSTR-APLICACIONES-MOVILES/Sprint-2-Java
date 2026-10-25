@@ -27,6 +27,16 @@ class InMemoryGroupRepository extends BaseGroupRepository {
     }
 
     @Override
+    public void createGroup(Group group, Callback<Group> callback) {
+        // without firebase we make the id with the current time
+        Group saved = new Group("group_" + System.currentTimeMillis(), group.getName(), group.getIcon(),
+                group.getPlanTitle(), group.getMembers(), group.getGoingIds(), group.getMaybeIds(),
+                group.getPendingInvites());
+        groups.put(saved.getId(), saved);
+        MainThread.post(() -> callback.onSuccess(saved));
+    }
+
+    @Override
     protected void startObserving(String groupId) {
         Group group = groups.get(groupId);
         if (group != null) {
