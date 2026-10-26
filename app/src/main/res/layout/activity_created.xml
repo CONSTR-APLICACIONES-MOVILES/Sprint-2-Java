@@ -44,36 +44,36 @@
 
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:gravity="center" android:text="Activity Created!" android:textColor="@color/brand_dark" android:textSize="24sp" android:textStyle="bold" />
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:gravity="center" android:text="Your activity has been scheduled and invitations were sent to your group." android:textColor="@color/brand_slate" android:textSize="12sp" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/bg_green_chip" android:paddingStart="10dp" android:paddingTop="6dp" android:paddingEnd="10dp" android:paddingBottom="6dp" android:text="✓  Added to your ParchApp calendar" android:textColor="@color/brand_success_dark" android:textSize="10sp" android:textStyle="bold" />
+            <TextView android:id="@+id/calendar_added_badge" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/bg_green_chip" android:paddingStart="10dp" android:paddingTop="6dp" android:paddingEnd="10dp" android:paddingBottom="6dp" android:text="Added to calendar" android:textColor="@color/brand_success_dark" android:textSize="10sp" android:textStyle="bold" android:visibility="gone" />
 
             <!-- Summary card -->
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:background="@drawable/bg_dashboard_card" android:orientation="vertical" android:padding="14dp">
+            <LinearLayout android:id="@+id/activity_summary_card" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="18dp" android:background="@drawable/bg_dashboard_card" android:orientation="vertical" android:padding="14dp">
                 <LinearLayout android:layout_width="match_parent" android:layout_height="4dp" android:layout_marginTop="-14dp" android:layout_marginStart="-14dp" android:layout_marginEnd="-14dp" android:layout_marginBottom="10dp" android:background="@color/brand_primary" />
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_light_blue" android:paddingStart="8dp" android:paddingTop="5dp" android:paddingEnd="8dp" android:paddingBottom="5dp" android:text="📚 Study Session" android:textColor="@color/brand_primary" android:textSize="10sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:background="@drawable/bg_card_flat" android:paddingStart="8dp" android:paddingTop="5dp" android:paddingEnd="8dp" android:paddingBottom="5dp" android:text="Engineering 2026" android:textColor="@color/brand_dark" android:textSize="10sp" android:textStyle="bold" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:background="@drawable/bg_card_flat" android:paddingStart="8dp" android:paddingTop="5dp" android:paddingEnd="8dp" android:paddingBottom="5dp" android:text="Group" android:textColor="@color/brand_dark" android:textSize="10sp" android:textStyle="bold" />
                 </LinearLayout>
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="Study Session: Linear Algebra &amp; Calculus" android:textColor="@color/brand_dark" android:textSize="14sp" android:textStyle="bold" />
+                <TextView android:id="@+id/created_activity_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:textColor="@color/brand_dark" android:textSize="14sp" android:textStyle="bold" />
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginTop="12dp" android:background="@color/brand_divider" />
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:gravity="top">
                     <TextView android:layout_width="26dp" android:layout_height="26dp" android:background="@drawable/bg_icon_badge" android:gravity="center" android:text="◷" android:textColor="@color/brand_primary" android:textSize="12sp" />
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Today, Oct 24 • 4:00 PM – 6:00 PM" android:textColor="@color/brand_dark" android:textSize="11sp" android:textStyle="bold" />
-                        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="2 hours duration • Starts in 1h 45m" android:textColor="@color/brand_slate" android:textSize="10sp" />
+                        <TextView android:id="@+id/created_activity_time" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/brand_dark" android:textSize="11sp" android:textStyle="bold" />
+                        <TextView android:id="@+id/created_activity_duration" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/brand_slate" android:textSize="10sp" />
                     </LinearLayout>
                 </LinearLayout>
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:gravity="top">
                     <TextView android:layout_width="26dp" android:layout_height="26dp" android:background="@drawable/bg_icon_badge" android:backgroundTint="@color/brand_success_background" android:gravity="center" android:text="⌖" android:textColor="@color/brand_success_dark" android:textSize="12sp" />
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Biblioteca Central • Sala 3B" android:textColor="@color/brand_dark" android:textSize="11sp" android:textStyle="bold" />
-                        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Piso 3, Bloque Ingenierías" android:textColor="@color/brand_slate" android:textSize="10sp" />
+                        <TextView android:id="@+id/created_activity_location" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/brand_dark" android:textSize="11sp" android:textStyle="bold" />
+                        <TextView android:id="@+id/created_activity_location_detail" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/brand_slate" android:textSize="10sp" />
                     </LinearLayout>
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_green_chip" android:paddingStart="6dp" android:paddingTop="3dp" android:paddingEnd="6dp" android:paddingBottom="3dp" android:text="3 min walk" android:textColor="@color/brand_success_dark" android:textSize="9sp" android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
 
             <!-- Attendees card -->
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/bg_dashboard_card" android:orientation="vertical" android:padding="14dp">
+            <LinearLayout android:id="@+id/attendees_card" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:background="@drawable/bg_dashboard_card" android:orientation="vertical" android:padding="14dp">
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="INVITED FRIENDS (4)" android:textColor="@color/brand_dark" android:textSize="10sp" android:textStyle="bold" />
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1 host • 3 pending" android:textColor="@color/brand_slate" android:textSize="9sp" />

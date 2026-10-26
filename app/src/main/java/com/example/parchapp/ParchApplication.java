@@ -11,7 +11,7 @@ public class ParchApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Repositories.init(this);
-        AnalyticsTracker.getInstance().init(this, Repositories.isFirebaseAvailable());
+        AnalyticsTracker.getInstance().init(this, Repositories.isFirebaseAnalyticsAvailable());
 
         UserProfile restored = Repositories.auth().getSignedInUser();
         if (restored != null) {

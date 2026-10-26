@@ -138,10 +138,10 @@
 
             <!-- Plan card 1: Confirmed study session -->
             <LinearLayout android:id="@+id/plan_card_study" android:clickable="true" android:focusable="true" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:background="@drawable/bg_dashboard_card" android:orientation="vertical" android:padding="14dp">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_green_chip" android:paddingStart="8dp" android:paddingTop="5dp" android:paddingEnd="8dp" android:paddingBottom="5dp" android:text="✓  Confirmed • 4/4 ready" android:textColor="@color/brand_success_dark" android:textSize="10sp" android:textStyle="bold" />
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="Study Session: Linear Algebra &amp; Calculus" android:textColor="@color/brand_dark" android:textSize="14sp" android:textStyle="bold" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="◷  4:00 PM – 6:00 PM" android:textColor="@color/brand_slate" android:textSize="11sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="▥  Central Library • Room 302" android:textColor="@color/brand_slate" android:textSize="11sp" />
+                <TextView android:id="@+id/plan_status_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_green_chip" android:paddingStart="8dp" android:paddingTop="5dp" android:paddingEnd="8dp" android:paddingBottom="5dp" android:textColor="@color/brand_success_dark" android:textSize="10sp" android:textStyle="bold" />
+                <TextView android:id="@+id/plan_title_text" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:textColor="@color/brand_dark" android:textSize="14sp" android:textStyle="bold" />
+                <TextView android:id="@+id/plan_time_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="@color/brand_slate" android:textSize="11sp" />
+                <TextView android:id="@+id/plan_location_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:textColor="@color/brand_slate" android:textSize="11sp" />
                 <View android:layout_width="match_parent" android:layout_height="5dp" android:layout_marginTop="12dp" android:background="@drawable/bg_progress_track" />
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:gravity="center_vertical">
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="horizontal">
@@ -155,13 +155,13 @@
             </LinearLayout>
 
             <!-- Plan card 2: Soccer voting -->
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:orientation="horizontal">
+            <LinearLayout android:id="@+id/plan_card_rsvp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:orientation="horizontal">
                 <View android:layout_width="4dp" android:layout_height="match_parent" android:background="@color/brand_primary" />
                 <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:background="@drawable/bg_dashboard_card" android:orientation="vertical" android:padding="14dp">
                     <TextView android:id="@+id/soccer_vote_badge" android:layout_width="wrap_content" android:layout_height="wrap_content" android:background="@drawable/bg_light_blue" android:paddingStart="8dp" android:paddingTop="5dp" android:paddingEnd="8dp" android:paddingBottom="5dp" android:text="◷  Voting pending • 3/6" android:textColor="@color/brand_primary" android:textSize="10sp" android:textStyle="bold" />
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="5-a-side Soccer &amp; Social" android:textColor="@color/brand_dark" android:textSize="14sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="▣  Friday, 7:30 PM" android:textColor="@color/brand_slate" android:textSize="11sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="◎  Campus Sports Center" android:textColor="@color/brand_slate" android:textSize="11sp" />
+                    <TextView android:id="@+id/rsvp_plan_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:textColor="@color/brand_dark" android:textSize="14sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/rsvp_plan_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:textColor="@color/brand_slate" android:textSize="11sp" />
+                    <TextView android:id="@+id/rsvp_plan_location" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:textColor="@color/brand_slate" android:textSize="11sp" />
                     <FrameLayout android:layout_width="match_parent" android:layout_height="5dp" android:layout_marginTop="10dp" android:background="@drawable/bg_progress_track">
                         <View android:id="@+id/soccer_progress_bar" android:layout_width="50dp" android:layout_height="match_parent" android:background="@drawable/bg_progress_fill" android:backgroundTint="@color/brand_primary" />
                     </FrameLayout>
@@ -180,15 +180,15 @@
             </LinearLayout>
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:orientation="horizontal">
                 <LinearLayout android:id="@+id/group_card_eng" android:clickable="true" android:focusable="true" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginEnd="5dp" android:layout_weight="1" android:background="@drawable/bg_dashboard_card" android:orientation="vertical" android:padding="12dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🎓" android:textSize="18sp" />
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Engineering 2026" android:textColor="@color/brand_dark" android:textSize="11sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="28 members" android:textColor="@color/brand_slate" android:textSize="10sp" />
+                    <TextView android:id="@+id/group_card_eng_icon" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="18sp" />
+                    <TextView android:id="@+id/group_card_eng_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:textColor="@color/brand_dark" android:textSize="11sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/group_card_eng_subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/brand_slate" android:textSize="10sp" />
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="Open chat  →" android:textColor="@color/brand_primary" android:textSize="10sp" android:textStyle="bold" />
                 </LinearLayout>
                 <LinearLayout android:id="@+id/roomies_group_card" android:clickable="true" android:focusable="true" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="5dp" android:layout_weight="1" android:background="@drawable/bg_dashboard_card" android:orientation="vertical" android:padding="12dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="⌂" android:textColor="@color/brand_purple" android:textSize="20sp" />
-                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Roomies Main St" android:textColor="@color/brand_dark" android:textSize="11sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4 members • 1 plan" android:textColor="@color/brand_slate" android:textSize="10sp" />
+                    <TextView android:id="@+id/group_card_roomies_icon" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/brand_purple" android:textSize="20sp" />
+                    <TextView android:id="@+id/group_card_roomies_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textColor="@color/brand_dark" android:textSize="11sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/group_card_roomies_subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/brand_slate" android:textSize="10sp" />
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="View status  →" android:textColor="@color/brand_dark" android:textSize="10sp" android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>

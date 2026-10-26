@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.ArrayList;
 
 /* Used when Firebase is not configured. Data lives only while the process is alive. */
 class InMemoryGroupRepository extends BaseGroupRepository {
@@ -24,6 +25,17 @@ class InMemoryGroupRepository extends BaseGroupRepository {
                 callback.onSuccess(group);
             }
         });
+    }
+
+    @Override
+    public void getGroups(String userId, Callback<List<Group>> callback) {
+        List<Group> result = new ArrayList<>();
+        for (Group group : groups.values()) {
+            if (group.getMembers().stream().anyMatch(member -> member.getId().equals(userId))) {
+                result.add(group);
+            }
+        }
+        MainThread.post(() -> callback.onSuccess(result));
     }
 
     @Override

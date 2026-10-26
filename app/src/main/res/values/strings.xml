@@ -61,14 +61,14 @@
 
     <!-- Calendar modal -->
     <string name="calendar_and_sync">Calendar &amp; Sync</string>
-    <string name="calendar_period">October 2026 • Term 1</string>
-    <string name="calendar_week">Week of Oct 21 – 27</string>
-    <string name="calendar_today_badge">Today: Oct 25</string>
+    <string name="calendar_period">Connected calendar</string>
+    <string name="calendar_week">Schedule</string>
+    <string name="calendar_today_badge">Today</string>
     <string name="free_availability_block">Free Availability Block</string>
     <string name="synced_free">Synced Free</string>
 
     <!-- Plan details modal -->
-    <string name="organized_by">Organized by Engineering 2026 Core</string>
+    <string name="organized_by">Activity details</string>
     <string name="add_to_calendar">Add to Calendar</string>
     <string name="close">Close</string>
 

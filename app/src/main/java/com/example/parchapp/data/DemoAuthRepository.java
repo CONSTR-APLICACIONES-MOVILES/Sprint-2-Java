@@ -25,6 +25,11 @@ class DemoAuthRepository implements AuthRepository {
     }
 
     @Override
+    public void signInWithGoogle(String idToken, Callback<UserProfile> callback) {
+        signIn("google.user@demo.parchapp", "demo-password", callback);
+    }
+
+    @Override
     public void register(String email, String password, Callback<UserProfile> callback) {
         signIn(email, password, callback);
     }

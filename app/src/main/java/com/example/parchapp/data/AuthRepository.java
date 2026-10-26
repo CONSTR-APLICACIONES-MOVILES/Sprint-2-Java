@@ -13,6 +13,8 @@ public interface AuthRepository {
 
     void signIn(String email, String password, Callback<UserProfile> callback);
 
+    void signInWithGoogle(String idToken, Callback<UserProfile> callback);
+
     void register(String email, String password, Callback<UserProfile> callback);
 
     void sendPasswordReset(String email, Callback<Void> callback);

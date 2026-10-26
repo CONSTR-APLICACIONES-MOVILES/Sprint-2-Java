@@ -5,7 +5,9 @@ import androidx.annotation.Nullable;
 import com.example.parchapp.UserProfile;
 import com.example.parchapp.util.Callback;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 /* Firebase keeps the token and restores the session on the next launch. */
 class FirebaseAuthRepository implements AuthRepository {
@@ -25,6 +27,14 @@ class FirebaseAuthRepository implements AuthRepository {
     @Override
     public void signIn(String email, String password, Callback<UserProfile> callback) {
         auth.signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener(result -> callback.onSuccess(toProfile(result.getUser())))
+                .addOnFailureListener(callback::onError);
+    }
+
+    @Override
+    public void signInWithGoogle(String idToken, Callback<UserProfile> callback) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        auth.signInWithCredential(credential)
                 .addOnSuccessListener(result -> callback.onSuccess(toProfile(result.getUser())))
                 .addOnFailureListener(callback::onError);
     }

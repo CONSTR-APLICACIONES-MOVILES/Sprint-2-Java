@@ -11,12 +11,14 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.parchapp.analytics.AnalyticsEvents;
 import com.example.parchapp.analytics.AnalyticsTracker;
-import com.example.parchapp.data.DemoData;
+import com.example.parchapp.analytics.ActivityCreationTelemetry;
 import com.example.parchapp.data.GroupListener;
 import com.example.parchapp.data.Repositories;
 import com.example.parchapp.domain.model.Group;
@@ -24,7 +26,12 @@ import com.example.parchapp.domain.model.PlannedActivity;
 import com.example.parchapp.util.Callback;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class CreateGroupActivity extends AppCompatActivity implements GroupListener {
     private static final String SCREEN = "create_group";
@@ -40,9 +47,6 @@ public class CreateGroupActivity extends AppCompatActivity implements GroupListe
         setContentView(R.layout.activity_create_group);
 
         groupId = getIntent().getStringExtra(GroupDetailActivity.EXTRA_GROUP_ID);
-        if (groupId == null) {
-            groupId = DemoData.ROOMIES_ID;
-        }
         emailChips = findViewById(R.id.email_chips);
         emailInput = findViewById(R.id.email_input_group);
 
@@ -54,8 +58,8 @@ public class CreateGroupActivity extends AppCompatActivity implements GroupListe
         findViewById(R.id.header_profile_btn).setOnClickListener(v -> toast("Profile coming soon"));
 
         findViewById(R.id.back_group_button).setOnClickListener(v -> finish());
-        findViewById(R.id.activity_date_input).setOnClickListener(v -> toast("Date picker coming soon"));
-        findViewById(R.id.activity_time_input).setOnClickListener(v -> toast("Time picker coming soon"));
+        findViewById(R.id.activity_date_input).setOnClickListener(v -> pickDate());
+        findViewById(R.id.activity_time_input).setOnClickListener(v -> pickTime());
         findViewById(R.id.copy_group_link_button).setOnClickListener(v -> copyGroupLink());
         findViewById(R.id.share_group_link_button).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_INVITATIONS, SCREEN);
@@ -73,19 +77,38 @@ public class CreateGroupActivity extends AppCompatActivity implements GroupListe
                 startActivity(new Intent(this, DashboardActivity.class)));
         findViewById(R.id.nav_schedule_create).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_SCHEDULE, SCREEN);
-            toast("Schedule coming soon");
+            new CalendarSheet().show(getSupportFragmentManager(), "calendar_navigation");
         });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Repositories.groups().observeGroup(groupId, this);
+        if (groupId != null) {
+            Repositories.groups().observeGroup(groupId, this);
+        } else {
+            Repositories.groups().getGroups(UserSession.getCurrentUser().getId(), new Callback<List<Group>>() {
+                @Override
+                public void onSuccess(List<Group> groups) {
+                    if (!groups.isEmpty()) {
+                        groupId = groups.get(0).getId();
+                        Repositories.groups().observeGroup(groupId, CreateGroupActivity.this);
+                    }
+                }
+
+                @Override
+                public void onError(Exception error) {
+                    toast("Could not load your groups");
+                }
+            });
+        }
     }
 
     @Override
     protected void onStop() {
-        Repositories.groups().removeGroupListener(groupId, this);
+        if (groupId != null) {
+            Repositories.groups().removeGroupListener(groupId, this);
+        }
         super.onStop();
     }
 
@@ -134,19 +157,33 @@ public class CreateGroupActivity extends AppCompatActivity implements GroupListe
 
         View createButton = findViewById(R.id.create_group_button);
         createButton.setEnabled(false);
+        String creationSessionId = UUID.randomUUID().toString();
+        long creationStartedAt = System.currentTimeMillis();
+        ActivityCreationTelemetry.attempt(creationSessionId, "propose_plan", 0);
         Repositories.activities().createActivity(activity, new Callback<PlannedActivity>() {
             @Override
             public void onSuccess(PlannedActivity saved) {
+                ActivityCreationTelemetry.result(creationSessionId, "propose_plan",
+                        System.currentTimeMillis() - creationStartedAt, true, saved.getId(), null);
                 Map<String, Object> params = new HashMap<>();
                 params.put(AnalyticsEvents.PARAM_CATEGORY, "other");
                 params.put(AnalyticsEvents.PARAM_SOURCE, "propose_plan");
+                params.put(AnalyticsEvents.PARAM_CREATION_SESSION_ID, creationSessionId);
+                params.put(AnalyticsEvents.PARAM_ACTIVITY_ID, saved.getId());
                 tracker.track(AnalyticsEvents.ACTIVITY_CREATED, params);
                 createButton.setEnabled(true);
-                startActivity(new Intent(CreateGroupActivity.this, ActivityCreatedActivity.class));
+                startActivity(new Intent(CreateGroupActivity.this, ActivityCreatedActivity.class)
+                        .putExtra(ActivityCreatedActivity.EXTRA_TITLE, saved.getTitle())
+                        .putExtra(ActivityCreatedActivity.EXTRA_DATE, saved.getDate())
+                        .putExtra(ActivityCreatedActivity.EXTRA_TIME, saved.getTime())
+                        .putExtra(ActivityCreatedActivity.EXTRA_LOCATION, saved.getLocation()));
             }
 
             @Override
             public void onError(Exception error) {
+                ActivityCreationTelemetry.result(creationSessionId, "propose_plan",
+                        System.currentTimeMillis() - creationStartedAt, false, null,
+                        error.getClass().getSimpleName());
                 createButton.setEnabled(true);
                 toast("Could not create the plan. Try again.");
             }
@@ -159,6 +196,27 @@ public class CreateGroupActivity extends AppCompatActivity implements GroupListe
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         clipboard.setPrimaryClip(ClipData.newPlainText("Group link", link));
         toast("Group link copied");
+    }
+
+    private void pickDate() {
+        EditText input = findViewById(R.id.activity_date_input);
+        Calendar today = Calendar.getInstance();
+        new DatePickerDialog(this, (view, year, month, day) -> {
+            Calendar selected = Calendar.getInstance();
+            selected.set(year, month, day);
+            input.setText(new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(selected.getTime()));
+        }, today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH)).show();
+    }
+
+    private void pickTime() {
+        EditText input = findViewById(R.id.activity_time_input);
+        Calendar now = Calendar.getInstance();
+        new TimePickerDialog(this, (view, hour, minute) -> {
+            Calendar selected = Calendar.getInstance();
+            selected.set(Calendar.HOUR_OF_DAY, hour);
+            selected.set(Calendar.MINUTE, minute);
+            input.setText(new SimpleDateFormat("h:mm a", Locale.US).format(selected.getTime()));
+        }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), false).show();
     }
 
     private void toast(String message) {

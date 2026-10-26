@@ -136,7 +136,6 @@
                     android:drawableTint="@color/brand_slate"
                     android:hint="Select a date"
                     android:paddingStart="12dp"
-                    android:text="Fri, Oct 24, 2026"
                     android:textColor="@color/brand_dark"
                     android:textSize="11sp" />
                 <EditText
@@ -151,7 +150,6 @@
                     android:drawableTint="@color/brand_slate"
                     android:hint="Select a time"
                     android:paddingStart="12dp"
-                    android:text="7:30 PM"
                     android:textColor="@color/brand_dark"
                     android:textSize="11sp" />
             </LinearLayout>
