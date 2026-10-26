@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
 
 /* Firebase keeps the token and restores the session on the next launch. */
 class FirebaseAuthRepository implements AuthRepository {
@@ -40,9 +41,19 @@ class FirebaseAuthRepository implements AuthRepository {
     }
 
     @Override
-    public void register(String email, String password, Callback<UserProfile> callback) {
+    public void register(String fullName, String email, String password, Callback<UserProfile> callback) {
         auth.createUserWithEmailAndPassword(email, password)
-                .addOnSuccessListener(result -> callback.onSuccess(toProfile(result.getUser())))
+                .addOnSuccessListener(result -> {
+                    FirebaseUser user = result.getUser();
+                    if (fullName.isEmpty()) {
+                        callback.onSuccess(toProfile(user));
+                        return;
+                    }
+                    // The account already exists, so a failed name update still signs the user in.
+                    user.updateProfile(new UserProfileChangeRequest.Builder().setDisplayName(fullName).build())
+                            .addOnCompleteListener(task -> callback.onSuccess(
+                                    UserProfile.fromAccount(user.getUid(), user.getEmail(), fullName)));
+                })
                 .addOnFailureListener(callback::onError);
     }
 
