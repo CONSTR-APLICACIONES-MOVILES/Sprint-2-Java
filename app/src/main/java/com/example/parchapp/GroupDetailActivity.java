@@ -89,7 +89,7 @@ public class GroupDetailActivity extends AppCompatActivity implements GroupListe
                 startActivity(new Intent(this, DashboardActivity.class)));
         findViewById(R.id.nav_schedule_group).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_SCHEDULE, SCREEN);
-            new CalendarSheet().show(getSupportFragmentManager(), "calendar_navigation");
+            startActivity(new Intent(this, ScheduleActivity.class));
         });
         findViewById(R.id.nav_history_group).setOnClickListener(v -> toast("History coming soon"));
     }

@@ -29,6 +29,7 @@
             android:windowSoftInputMode="adjustResize" />
         <activity android:name=".CreateAccountActivity" />
         <activity android:name=".DashboardActivity" />
+        <activity android:name=".ScheduleActivity" />
         <activity android:name=".GroupDetailActivity" />
         <activity android:name=".CreateGroupActivity" />
         <activity android:name=".ActivityCreatedActivity" />

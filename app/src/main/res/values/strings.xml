@@ -119,4 +119,20 @@
     <string name="toggle_confirm_password_visibility">Show or hide confirmation</string>
     <string name="continue_label">Continue</string>
     <string name="already_have_account">Already have an account?</string>
+    <string name="search">Search</string>
+    <string name="notifications">Notifications</string>
+    <string name="duration_label">Duration:</string>
+    <string name="time_column">TIME</string>
+    <string name="my_schedule">●  My Schedule</string>
+    <string name="add_friends">+ Add friends</string>
+    <string name="me_chip">Me</string>
+    <string name="select_friends_title">Select Friends to Compare</string>
+    <string name="select_friends_subtitle">Toggle who to include in the mutual availability overlay</string>
+    <string name="view_comparison">View Comparison</string>
+    <string name="done">Done</string>
+    <string name="available_common_slots">Available Common Slots</string>
+    <string name="plan_with_slot">Plan with this Slot</string>
+    <string name="close_label">Close</string>
+    <string name="custom_duration">Custom</string>
+    <string name="custom_duration_title">Meeting duration (minutes)</string>
 </resources>
