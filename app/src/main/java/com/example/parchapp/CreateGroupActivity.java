@@ -53,9 +53,10 @@ public class CreateGroupActivity extends AppCompatActivity implements GroupListe
         findViewById(R.id.header_search_btn).setOnClickListener(v -> toast("Search coming soon"));
         findViewById(R.id.header_notif_btn).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_ALERTS, SCREEN);
-            toast("No new notifications");
+            startActivity(new Intent(this, AlertsActivity.class));
         });
-        findViewById(R.id.header_profile_btn).setOnClickListener(v -> toast("Profile coming soon"));
+        findViewById(R.id.header_profile_btn).setOnClickListener(v ->
+                startActivity(new Intent(this, ProfileActivity.class)));
 
         findViewById(R.id.back_group_button).setOnClickListener(v -> finish());
         findViewById(R.id.activity_date_input).setOnClickListener(v -> pickDate());

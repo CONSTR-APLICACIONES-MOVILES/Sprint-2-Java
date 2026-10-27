@@ -11,6 +11,7 @@
     <color name="brand_success">#10B981</color>
     <color name="brand_success_background">#ECFDF5</color>
     <color name="brand_success_dark">#047857</color>
+    <color name="brand_urgent_dark">#93000A</color>
     <color name="brand_background">#F8FAFE</color>
     <color name="brand_card_stroke">#F1F5F9</color>
     <color name="brand_chip_background">#EEF4FF</color>

@@ -26,6 +26,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".CreateAccountActivity" />
+        <activity android:name=".AlertsActivity" />
+        <activity android:name=".ProfileActivity" />
         <activity android:name=".DashboardActivity" />
         <activity android:name=".GroupDetailActivity" />
         <activity android:name=".CreateGroupActivity" />

@@ -57,10 +57,10 @@ public class DashboardActivity extends AppCompatActivity implements GroupListene
         findViewById(R.id.header_search_btn).setOnClickListener(v -> toast("Search coming soon"));
         findViewById(R.id.header_notif_btn).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_ALERTS, SCREEN);
-            toast("No new notifications");
+            startActivity(new Intent(this, AlertsActivity.class));
         });
         findViewById(R.id.header_user_initials).setOnClickListener(v ->
-                new AvailabilityStatusSheet().show(getSupportFragmentManager(), "availability_status"));
+                startActivity(new Intent(this, ProfileActivity.class)));
 
         findViewById(R.id.copy_link_button).setOnClickListener(v -> copyInviteLink());
         findViewById(R.id.btn_edit_free_until).setOnClickListener(v -> openQuickStatusSheet());

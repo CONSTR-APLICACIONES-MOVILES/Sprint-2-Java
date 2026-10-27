@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.PersistentCacheSettings;
+import com.google.firebase.functions.FirebaseFunctions;
 
 /* Creates the repositories once and hands them to the controllers. When the app is built without {@code google-services.json}, in-memory versions with the demo data are used instead, so the prototype keeps working.
  */
@@ -20,6 +21,8 @@ public final class Repositories {
     private static ActivityRepository activities;
     private static AuthRepository auth;
     private static InsightsRepository insights;
+    private static AlertsRepository alerts;
+    private static ProfileRepository profile;
     private static StatusService status;
 
     private Repositories() {
@@ -44,6 +47,8 @@ public final class Repositories {
             if (BuildConfig.USE_FIREBASE_EMULATORS) {
                 firebaseAuth.useEmulator(BuildConfig.FIREBASE_EMULATOR_HOST, 9099);
                 db.useEmulator(BuildConfig.FIREBASE_EMULATOR_HOST, 8080);
+                FirebaseFunctions.getInstance("us-central1")
+                        .useEmulator(BuildConfig.FIREBASE_EMULATOR_HOST, 5001);
             }
             // Now then in the scenario of offline persistence, screens read the local copy when there is no signal (scenario 9.2).
             db.setFirestoreSettings(new FirebaseFirestoreSettings.Builder()
@@ -53,12 +58,16 @@ public final class Repositories {
             activities = new FirestoreActivityRepository(db);
             auth = new FirebaseAuthRepository(firebaseAuth);
             insights = new FirestoreInsightsRepository(db);
+            alerts = new FirebaseAlertsRepository();
+            profile = new FirebaseProfileRepository();
         } else {
             groups = new InMemoryGroupRepository();
             activities = new InMemoryActivityRepository();
             auth = new DemoAuthRepository();
             insights = callback -> MainThread.post(() ->
                     callback.onSuccess(InsightsRepository.DEFAULT_RECOMMENDED_POSITION));
+            alerts = new InMemoryAlertsRepository();
+            profile = new InMemoryProfileRepository();
         }
         status = new StatusService(context);
     }
@@ -85,6 +94,14 @@ public final class Repositories {
 
     public static InsightsRepository insights() {
         return insights;
+    }
+
+    public static AlertsRepository alerts() {
+        return alerts;
+    }
+
+    public static ProfileRepository profile() {
+        return profile;
     }
 
     public static StatusService status() {
