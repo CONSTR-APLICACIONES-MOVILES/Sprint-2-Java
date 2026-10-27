@@ -35,6 +35,7 @@ public class CreateActivitySheet extends BottomSheetDialogFragment {
     private static final String ARG_SLOT_POSITION = "arg_slot_position";
     private static final String ARG_RECOMMENDED_POSITION = "arg_recommended_position";
     private static final String ARG_RECOMMENDATION_ID = "arg_recommendation_id";
+    private static final String ARG_SLOT_DATE = "arg_slot_date";
     private static final int NO_SLOT = -1;
 
     private TextView selectedGroupChip;
@@ -61,6 +62,14 @@ public class CreateActivitySheet extends BottomSheetDialogFragment {
         return sheet;
     }
 
+    /* Pre-fills the date field, for example with the day picked in the Schedule screen. */
+    public CreateActivitySheet withSuggestedDate(String date) {
+        Bundle args = getArguments() != null ? getArguments() : new Bundle();
+        args.putString(ARG_SLOT_DATE, date);
+        setArguments(args);
+        return this;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -83,6 +92,9 @@ public class CreateActivitySheet extends BottomSheetDialogFragment {
         EditText locationInput = view.findViewById(R.id.input_activity_location);
         if (suggestedTime != null) {
             timeInput.setText(suggestedTime);
+        }
+        if (args.getString(ARG_SLOT_DATE) != null) {
+            dateInput.setText(args.getString(ARG_SLOT_DATE));
         }
 
         TextView engChip = view.findViewById(R.id.chip_group_eng);

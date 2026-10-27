@@ -77,7 +77,7 @@ public class CreateGroupActivity extends AppCompatActivity implements GroupListe
                 startActivity(new Intent(this, DashboardActivity.class)));
         findViewById(R.id.nav_schedule_create).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_SCHEDULE, SCREEN);
-            new CalendarSheet().show(getSupportFragmentManager(), "calendar_navigation");
+            startActivity(new Intent(this, ScheduleActivity.class));
         });
     }
 
