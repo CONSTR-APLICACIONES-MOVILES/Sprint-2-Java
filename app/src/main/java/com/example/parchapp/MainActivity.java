@@ -9,17 +9,12 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.example.parchapp.analytics.AnalyticsTracker;
 import com.example.parchapp.data.AuthRepository;
 import com.example.parchapp.data.Repositories;
 import com.example.parchapp.util.Callback;
-import com.google.android.gms.tasks.Task;
+import com.example.parchapp.util.GoogleSignInFlow;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText emailInput;
     private EditText passwordInput;
     private Button signInButton;
-    private ActivityResultLauncher<Intent> googleSignInLauncher;
+    private GoogleSignInFlow googleSignIn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +35,7 @@ public class MainActivity extends AppCompatActivity {
         signInButton = findViewById(R.id.sign_in_button);
         emailInput = findViewById(R.id.email_input);
         passwordInput = findViewById(R.id.password_input);
-        googleSignInLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(), result -> handleGoogleResult(result.getData()));
+        googleSignIn = new GoogleSignInFlow(this, new OpenDashboardCallback());
 
         // Returning users skip the form cause they have an account: Firebase restored their session in ParchApplication.
         UserProfile restored = auth.getSignedInUser();
@@ -61,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
             continueButton.setOnClickListener(v -> openDashboard(UserSession.demoUser()));
         }
 
-        googleButton.setOnClickListener(v -> beginGoogleSignIn());
+        googleButton.setOnClickListener(v -> googleSignIn.start());
         signInButton.setOnClickListener(v -> submit(false));
         findViewById(R.id.create_account).setOnClickListener(v ->
                 startActivity(new Intent(this, CreateAccountActivity.class)));
@@ -97,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         if (register) {
-            auth.register(email, password, callback);
+            auth.register("", email, password, callback);
         } else {
             auth.signIn(email, password, callback);
         }
@@ -119,47 +113,6 @@ public class MainActivity extends AppCompatActivity {
                 showMessage("Could not send the reset email");
             }
         });
-    }
-
-    private void beginGoogleSignIn() {
-        if (!Repositories.isFirebaseAvailable()) {
-            auth.signInWithGoogle("demo", new OpenDashboardCallback());
-            return;
-        }
-        int clientIdResource = getResources().getIdentifier(
-                "default_web_client_id", "string", getPackageName());
-        if (clientIdResource == 0) {
-            showMessage("Configure the Firebase OAuth client before using Google sign-in");
-            return;
-        }
-        String clientId = getString(clientIdResource);
-        if (clientId.trim().isEmpty()) {
-            showMessage("Configure the Firebase OAuth client before using Google sign-in");
-            return;
-        }
-        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(clientId)
-                .requestEmail()
-                .build();
-        googleSignInLauncher.launch(GoogleSignIn.getClient(this, options).getSignInIntent());
-    }
-
-    private void handleGoogleResult(Intent data) {
-        if (data == null) {
-            showMessage("Google sign-in was cancelled");
-            return;
-        }
-        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-        try {
-            GoogleSignInAccount account = task.getResult(com.google.android.gms.common.api.ApiException.class);
-            if (account == null || account.getIdToken() == null) {
-                showMessage("Google did not return an identity token");
-                return;
-            }
-            auth.signInWithGoogle(account.getIdToken(), new OpenDashboardCallback());
-        } catch (com.google.android.gms.common.api.ApiException error) {
-            showMessage("Google sign-in failed: " + error.getStatusCode());
-        }
     }
 
     private final class OpenDashboardCallback implements Callback<UserProfile> {

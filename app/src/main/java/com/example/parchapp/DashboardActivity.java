@@ -71,7 +71,7 @@ public class DashboardActivity extends AppCompatActivity implements GroupListene
         });
         findViewById(R.id.calendar_button).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_SCHEDULE, SCREEN);
-            new CalendarSheet().show(getSupportFragmentManager(), "calendar");
+            startActivity(new Intent(this, ScheduleActivity.class));
         });
         findViewById(R.id.new_activity_button).setOnClickListener(v ->
                 new CreateActivitySheet().show(getSupportFragmentManager(), "create_activity"));
@@ -95,7 +95,7 @@ public class DashboardActivity extends AppCompatActivity implements GroupListene
         findViewById(R.id.nav_groups).setOnClickListener(v -> openGroupDetail());
         findViewById(R.id.nav_schedule).setOnClickListener(v -> {
             tracker.trackFeature(AnalyticsEvents.FEATURE_SCHEDULE, SCREEN);
-            new CalendarSheet().show(getSupportFragmentManager(), "calendar_navigation");
+            startActivity(new Intent(this, ScheduleActivity.class));
         });
     }
 

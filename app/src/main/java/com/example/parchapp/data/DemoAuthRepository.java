@@ -30,8 +30,10 @@ class DemoAuthRepository implements AuthRepository {
     }
 
     @Override
-    public void register(String email, String password, Callback<UserProfile> callback) {
-        signIn(email, password, callback);
+    public void register(String fullName, String email, String password, Callback<UserProfile> callback) {
+        signedInUser = UserProfile.fromAccount(email.toLowerCase(java.util.Locale.ROOT), email, fullName);
+        UserProfile user = signedInUser;
+        MainThread.post(() -> callback.onSuccess(user));
     }
 
     @Override

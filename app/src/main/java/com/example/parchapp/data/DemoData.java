@@ -11,8 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/*Seed groups shown in the prototype. Used as it is by the in-memory repository, and written to
-    Firestore the first time a group is requested and does not exist there yet.
+/*Seed groups shown in the prototype. Used as it is by the in-memory repository, and written to Firestore the first time a group is requested and does not exist there yet.
  */
 public final class DemoData {
     public static final String ROOMIES_ID = "roomies";
@@ -36,6 +35,23 @@ public final class DemoData {
         groups.put(THESIS_ID, generated(THESIS_ID, "Thesis Support Group", "📌", "", 5, 0));
         groups.put(CHOIR_ID, generated(CHOIR_ID, "University Choir", "🎵", "Rehearsal", 12, 7));
         return groups;
+    }
+
+    /* Busy blocks of a demo member on a weekday (Calendar.MONDAY..SUNDAY). Weekdays shift the member's schedule by 0, 30 or 60 minutes so each day differs; weekends are free. Port of demoBusyOn in Backend/functions/src/demoData.js: keep both in sync (really op but important). */
+    public static List<TimeBlock> busyOn(Member member, int calendarDayOfWeek) {
+        List<TimeBlock> busy = new ArrayList<>();
+        if (calendarDayOfWeek == java.util.Calendar.SATURDAY || calendarDayOfWeek == java.util.Calendar.SUNDAY) {
+            return busy;
+        }
+        int shift = ((calendarDayOfWeek - java.util.Calendar.MONDAY) % 3) * 30;
+        for (TimeBlock block : member.getBusyBlocks()) {
+            int start = Math.min(1440, block.getStartMinute() + shift);
+            int end = Math.min(1440, block.getEndMinute() + shift);
+            if (start < end) {
+                busy.add(new TimeBlock(start, end));
+            }
+        }
+        return busy;
     }
 
     private static Group roomies() {
